@@ -28,3 +28,8 @@ jobs:
       run: dotnet publish --configuration Release --self-contained --runtime linux-x64
     - name: Compress
       run: tar czf app.tar.gz -C bin/Release/net8.0/linux-x64/publish .
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: publish-files
+        path: app.tar.gz
