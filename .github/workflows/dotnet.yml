@@ -10,10 +10,12 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
-
+  publish:
+    name: Create release build and upload to S3
     runs-on: ubuntu-latest
-
+    permissions:
+      id-token: write
+      contents: read
     steps:
     - uses: actions/checkout@v4
     - name: Setup .NET
@@ -28,8 +30,13 @@ jobs:
       run: dotnet publish --configuration Release --self-contained --runtime linux-x64
     - name: Compress
       run: tar czf app.tar.gz -C bin/Release/net8.0/linux-x64/publish .
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v3
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
       with:
-        name: publish-files
-        path: app.tar.gz
+        role-to-assume: ${{ secrets.AWS_ROLE }}
+        aws-region: ${{ secrets.AWS_REGION }}
+    - name: Copy compressed file to S3
+      run: |
+        today=`date '+%Y%m%d_%H%M%S'`
+        filename="app_$today.tar.gz";
+        aws s3 cp app.tar.gz s3://${{ secrets.AWS_S3_BUCKET }}/$filename
