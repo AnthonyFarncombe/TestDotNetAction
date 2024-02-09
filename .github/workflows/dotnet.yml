@@ -26,3 +26,5 @@ jobs:
       run: dotnet build --no-restore
     - name: Publish
       run: dotnet publish --configuration Release --self-contained --runtime linux-x64
+    - name: Compress
+      run: tar czf app.tar.gz -C bin/Release/net8.0/linux-x64/publish .
